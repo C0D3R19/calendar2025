@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Progress Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Countdown Display */
+        .countdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .time-block {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+
+        .label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Progress Bars */
+        .progress-container {
+            margin-bottom: 15px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+        }
+
+        /* Calendar */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .month {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .month-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .day-header {
+            text-align: center;
+            font-weight: bold;
+            padding: 5px;
+            font-size: 14px;
+        }
+
+        .date {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .date:hover {
+            background-color: #f0f0f0;
+        }
+
+        .date.selected {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        @media (max-width: 768px) {
+            .countdown {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main Time Stats -->
+        <div class="card">
+            <h1 class="title">Time Progress Tracker</h1>
+            
+            <!-- Countdown Display -->
+            <div class="countdown">
+                <div class="time-block">
+                    <div class="number" id="days">000</div>
+                    <div class="label">Days</div>
+                </div>
+                <div class="time-block">
+                    <div class="number" id="hours">00</div>
+                    <div class="label">Hours</div>
+                </div>
+                <div class="time-block">
+                    <div class="number" id="minutes">00</div>
+                    <div class="label">Minutes</div>
+                </div>
+                <div class="time-block">
+                    <div class="number" id="seconds">00</div>
+                    <div class="label">Seconds</div>
+                </div>
+            </div>
+
+            <!-- Progress Bars -->
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Year Progress</span>
+                    <span id="year-progress">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" id="year-bar"></div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Month Progress</span>
+                    <span id="month-progress">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" id="month-bar"></div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Week Progress</span>
+                    <span id="week-progress">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" id="week-bar"></div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Day Progress</span>
+                    <span id="day-progress">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" id="day-bar"></div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Days Tracked</span>
+                    <span id="checkbox-count">0/365</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" id="checkbox-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="card">
+            <div id="calendar" class="calendar-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedDatesCount = 0;
+        const totalDates = 365; // 2025 is not a leap year
+
+        // Time calculation functions
+        function getTimeProgress() {
+            const now = new Date();
+            
+            // Day progress
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const dayProgress = ((now - startOfDay) / (24 * 60 * 60 * 1000)) * 100;
+
+            // Week progress
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            startOfWeek.setHours(0, 0, 0, 0);
+            const weekProgress = ((now - startOfWeek) / (7 * 24 * 60 * 60 * 1000)) * 100;
+
+            // Month progress
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            const monthProgress = ((now - startOfMonth) / (endOfMonth - startOfMonth)) * 100;
+
+            // Year progress
+            const startOfYear = new Date(2025, 0, 1);
+            const endOfYear = new Date(2025, 11, 31, 23, 59, 59);
+            const yearProgress = ((now - startOfYear) / (endOfYear - startOfYear)) * 100;
+
+            return {
+                day: dayProgress,
+                week: weekProgress,
+                month: monthProgress,
+                year: yearProgress
+            };
+        }
+
+        function getCountdown() {
+            const now = new Date();
+            const endOfYear = new Date(2025, 11, 31, 23, 59, 59);
+            const timeLeft = endOfYear - now;
+
+            return {
+                days: Math.floor(timeLeft / (1000 * 60 * 60 * 24)),
+                hours: Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                minutes: Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60)),
+                seconds: Math.floor((timeLeft % (1000 * 60)) / 1000)
+            };
+        }
+
+        // Calendar functions
+        const months = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        
+        const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+        function getDaysInMonth(month) {
+            return new Date(2025, month + 1, 0).getDate();
+        }
+        
+        function getFirstDayOfMonth(month) {
+            return new Date(2025, month, 1).getDay();
+        }
+
+        function createCalendar() {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+            
+            months.forEach((monthName, monthIndex) => {
+                const monthDiv = document.createElement('div');
+                monthDiv.className = 'month';
+                
+                const monthTitle = document.createElement('div');
+                monthTitle.className = 'month-title';
+                monthTitle.textContent = monthName;
+                monthDiv.appendChild(monthTitle);
+                
+                const daysGrid = document.createElement('div');
+                daysGrid.className = 'days-grid';
+                
+                // Add day headers
+                daysOfWeek.forEach(day => {
+                    const dayHeader = document.createElement('div');
+                    dayHeader.className = 'day-header';
+                    dayHeader.textContent = day[0];
+                    daysGrid.appendChild(dayHeader);
+                });
+                
+                // Add empty cells for days before the 1st
+                const firstDay = getFirstDayOfMonth(monthIndex);
+                for (let i = 0; i < firstDay; i++) {
+                    const emptyDay = document.createElement('div');
+                    daysGrid.appendChild(emptyDay);
+                }
+                
+                // Add date cells
+                const daysInMonth = getDaysInMonth(monthIndex);
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateDiv = document.createElement('div');
+                    dateDiv.className = 'date';
+                    dateDiv.textContent = day;
+                    
+                    dateDiv.addEventListener('click', () => {
+                        const wasSelected = dateDiv.classList.contains('selected');
+                        dateDiv.classList.toggle('selected');
+                        selectedDatesCount += wasSelected ? -1 : 1;
+                        updateProgress();
+                    });
+                    
+                    daysGrid.appendChild(dateDiv);
+                }
+                
+                monthDiv.appendChild(daysGrid);
+                calendar.appendChild(monthDiv);
+            });
+        }
+
+        // Update functions
+        function updateProgress() {
+            const progress = getTimeProgress();
+            
+            // Update progress bars
+            document.getElementById('day-progress').textContent = `${progress.day.toFixed(1)}%`;
+            document.getElementById('day-bar').style.width = `${progress.day}%`;
+            
+            document.getElementById('week-progress').textContent = `${progress.week.toFixed(1)}%`;
+            document.getElementById('week-bar').style.width = `${progress.week}%`;
+            
+            document.getElementById('month-progress').textContent = `${progress.month.toFixed(1)}%`;
+            document.getElementById('month-bar').style.width = `${progress.month}%`;
+            
+            document.getElementById('year-progress').textContent = `${progress.year.toFixed(1)}%`;
+            document.getElementById('year-bar').style.width = `${progress.year}%`;
+
+            // Update checkbox progress
+            const checkboxProgress = (selectedDatesCount / totalDates) * 100;
+            document.getElementById('checkbox-bar').style.width = `${checkboxProgress}%`;
+            document.getElementById('checkbox-count').textContent = `${selectedDatesCount}/${totalDates}`;
+        }
+
+        function updateCountdownDisplay() {
+            const countdown = getCountdown();
+            
+            document.getElementById('days').textContent = String(countdown.days).padStart(3, '0');
+            document.getElementById('hours').textContent = String(countdown.hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(countdown.minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(countdown.seconds).padStart(2, '0');
+        }
+
+        // Initialize and start updates
+        createCalendar();
+        updateProgress();
+        updateCountdownDisplay();
+        
+        // Update timers
+        setInterval(updateCountdownDisplay, 1000);
+        setInterval(updateProgress, 1000);
+    </script>
+</body>
+</html>
