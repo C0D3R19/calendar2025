@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- Previous head and style sections remain the same -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Progress Tracker</title>
     <style>
+        /* Previous styles remain the same */
         * {
             margin: 0;
             padding: 0;
@@ -36,7 +38,6 @@
             text-align: center;
         }
 
-        /* Countdown Display */
         .countdown {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -63,7 +64,6 @@
             margin-top: 5px;
         }
 
-        /* Progress Bars */
         .progress-container {
             margin-bottom: 15px;
         }
@@ -89,7 +89,6 @@
             transition: width 0.3s ease;
         }
 
-        /* Calendar */
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -152,12 +151,11 @@
     </style>
 </head>
 <body>
+    <!-- Previous HTML structure remains the same -->
     <div class="container">
-        <!-- Main Time Stats -->
         <div class="card">
             <h1 class="title">Time Progress Tracker</h1>
             
-            <!-- Countdown Display -->
             <div class="countdown">
                 <div class="time-block">
                     <div class="number" id="days">000</div>
@@ -177,7 +175,6 @@
                 </div>
             </div>
 
-            <!-- Progress Bars -->
             <div class="progress-container">
                 <div class="progress-label">
                     <span>Year Progress</span>
@@ -229,7 +226,6 @@
             </div>
         </div>
 
-        <!-- Calendar -->
         <div class="card">
             <div id="calendar" class="calendar-grid"></div>
         </div>
@@ -237,38 +233,33 @@
 
     <script>
         let selectedDatesCount = 0;
-        const totalDates = 365; // 2025 is not a leap year
+        const totalDates = 365;
+        const STORAGE_KEY = 'selectedDates2025';
 
-        // Time calculation functions
+        // Load selected dates from localStorage
+        let selectedDates = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+        selectedDatesCount = selectedDates.size;
+
         function getTimeProgress() {
             const now = new Date();
             
-            // Day progress
             const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const dayProgress = ((now - startOfDay) / (24 * 60 * 60 * 1000)) * 100;
 
-            // Week progress
             const startOfWeek = new Date(now);
             startOfWeek.setDate(now.getDate() - now.getDay());
             startOfWeek.setHours(0, 0, 0, 0);
             const weekProgress = ((now - startOfWeek) / (7 * 24 * 60 * 60 * 1000)) * 100;
 
-            // Month progress
             const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
             const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
             const monthProgress = ((now - startOfMonth) / (endOfMonth - startOfMonth)) * 100;
 
-            // Year progress
             const startOfYear = new Date(2025, 0, 1);
             const endOfYear = new Date(2025, 11, 31, 23, 59, 59);
             const yearProgress = ((now - startOfYear) / (endOfYear - startOfYear)) * 100;
 
-            return {
-                day: dayProgress,
-                week: weekProgress,
-                month: monthProgress,
-                year: yearProgress
-            };
+            return { day: dayProgress, week: weekProgress, month: monthProgress, year: yearProgress };
         }
 
         function getCountdown() {
@@ -284,7 +275,6 @@
             };
         }
 
-        // Calendar functions
         const months = [
             "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
@@ -298,6 +288,10 @@
         
         function getFirstDayOfMonth(month) {
             return new Date(2025, month, 1).getDay();
+        }
+
+        function getDateKey(month, day) {
+            return `${month + 1}-${day}`;
         }
 
         function createCalendar() {
@@ -316,7 +310,6 @@
                 const daysGrid = document.createElement('div');
                 daysGrid.className = 'days-grid';
                 
-                // Add day headers
                 daysOfWeek.forEach(day => {
                     const dayHeader = document.createElement('div');
                     dayHeader.className = 'day-header';
@@ -324,24 +317,32 @@
                     daysGrid.appendChild(dayHeader);
                 });
                 
-                // Add empty cells for days before the 1st
                 const firstDay = getFirstDayOfMonth(monthIndex);
                 for (let i = 0; i < firstDay; i++) {
                     const emptyDay = document.createElement('div');
                     daysGrid.appendChild(emptyDay);
                 }
                 
-                // Add date cells
                 const daysInMonth = getDaysInMonth(monthIndex);
                 for (let day = 1; day <= daysInMonth; day++) {
                     const dateDiv = document.createElement('div');
                     dateDiv.className = 'date';
+                    const dateKey = getDateKey(monthIndex, day);
+                    if (selectedDates.has(dateKey)) {
+                        dateDiv.classList.add('selected');
+                    }
                     dateDiv.textContent = day;
                     
                     dateDiv.addEventListener('click', () => {
-                        const wasSelected = dateDiv.classList.contains('selected');
                         dateDiv.classList.toggle('selected');
-                        selectedDatesCount += wasSelected ? -1 : 1;
+                        if (dateDiv.classList.contains('selected')) {
+                            selectedDates.add(dateKey);
+                            selectedDatesCount++;
+                        } else {
+                            selectedDates.delete(dateKey);
+                            selectedDatesCount--;
+                        }
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(selectedDates)));
                         updateProgress();
                     });
                     
@@ -353,11 +354,9 @@
             });
         }
 
-        // Update functions
         function updateProgress() {
             const progress = getTimeProgress();
             
-            // Update progress bars
             document.getElementById('day-progress').textContent = `${progress.day.toFixed(1)}%`;
             document.getElementById('day-bar').style.width = `${progress.day}%`;
             
@@ -370,7 +369,6 @@
             document.getElementById('year-progress').textContent = `${progress.year.toFixed(1)}%`;
             document.getElementById('year-bar').style.width = `${progress.year}%`;
 
-            // Update checkbox progress
             const checkboxProgress = (selectedDatesCount / totalDates) * 100;
             document.getElementById('checkbox-bar').style.width = `${checkboxProgress}%`;
             document.getElementById('checkbox-count').textContent = `${selectedDatesCount}/${totalDates}`;
@@ -385,12 +383,10 @@
             document.getElementById('seconds').textContent = String(countdown.seconds).padStart(2, '0');
         }
 
-        // Initialize and start updates
         createCalendar();
         updateProgress();
         updateCountdownDisplay();
         
-        // Update timers
         setInterval(updateCountdownDisplay, 1000);
         setInterval(updateProgress, 1000);
     </script>
